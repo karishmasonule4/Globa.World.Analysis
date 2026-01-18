@@ -1,0 +1,76 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import plotly.express as px
+import streamlit as st
+
+plt.rcParams['figure.figsize'] = (10,5)
+df = pd.read_csv("Global_world_t.csv")
+df.head()
+df.shape
+df.info()
+df.describe(include='all')
+# Remove % and convert to numeric
+percent_cols = [
+    'Population: Labor force participation (%)',
+    'Tax revenue (%)',
+    'Unemployment rate',
+    'Urban_population'
+]
+
+for col in percent_cols:
+    if col in df.columns:
+        df[col] = df[col].astype(str).str.replace('%','').str.replace(',','')
+        df[col] = pd.to_numeric(df[col], errors='coerce')
+# Convert CO2 and Population related columns
+df['Co2-Emissions'] = df['Co2-Emissions'].astype(str).str.replace(',','')
+df['Co2-Emissions'] = pd.to_numeric(df['Co2-Emissions'], errors='coerce')
+
+total_countries = df['Country'].nunique()
+avg_birth_rate = df['Birth Rate'].mean()
+avg_unemployment = df['Unemployment rate'].mean()
+avg_co2 = df['Co2-Emissions'].mean()
+
+total_countries, avg_birth_rate, avg_unemployment, avg_co2
+top_density = df.sort_values(by='Density\n(P/Km2)', ascending=False).head(10)
+
+plt.barh(top_density['Country'], top_density['Density\n(P/Km2)'])
+plt.xlabel("Population Density")
+plt.ylabel("Country")
+plt.title("Top 10 Most Densely Populated Countries")
+plt.show()
+
+fig = px.scatter(
+    df,
+    x='Birth Rate',
+    y='Co2-Emissions',
+    size='Land Area(Km2)',
+    color='Country',
+    title="Birth Rate vs CO₂ Emissions (Global View)",
+    hover_name='Country'
+)
+
+fig.show()
+fig = px.choropleth(
+    df,
+    locations='Country',
+    locationmode='country names',
+    color='Unemployment rate',
+    title='Global Unemployment Rate',
+    color_continuous_scale='Plasma'
+)
+
+fig.show()
+
+countries = ['India', 'United States', 'China']
+
+df[df['Country'].isin(countries)][[
+    'Country',
+    'Birth Rate',
+    'Unemployment rate',
+    'Co2-Emissions'
+]]
+print("Global Analysis Completed Successfully!")
+
+
+
