@@ -1,75 +1,38 @@
+
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
-import streamlit as st
 
-plt.rcParams['figure.figsize'] = (10,5)
-df = pd.read_csv("Global_world_t.csv")
-df.head()
-df.shape
-df.info()
-df.describe(include='all')
-# Remove % and convert to numeric
-percent_cols = [
-    'Population: Labor force participation (%)',
-    'Tax revenue (%)',
-    'Unemployment rate',
-    'Urban_population'
-]
+# Load dataset
+file_path = "/mnt/data/Global_world_t.csv"
+df = pd.read_csv(file_path)
 
-for col in percent_cols:
-    if col in df.columns:
-        df[col] = df[col].astype(str).str.replace('%','').str.replace(',','')
-        df[col] = pd.to_numeric(df[col], errors='coerce')
-# Convert CO2 and Population related columns
-df['Co2-Emissions'] = df['Co2-Emissions'].astype(str).str.replace(',','')
-df['Co2-Emissions'] = pd.to_numeric(df['Co2-Emissions'], errors='coerce')
+# Basic Exploration
+print("===== DATASET HEAD =====")
+print(df.head())
 
-total_countries = df['Country'].nunique()
-avg_birth_rate = df['Birth Rate'].mean()
-avg_unemployment = df['Unemployment rate'].mean()
-avg_co2 = df['Co2-Emissions'].mean()
+print("\n===== DATASET INFO =====")
+print(df.info())
 
-total_countries, avg_birth_rate, avg_unemployment, avg_co2
-top_density = df.sort_values(by='Density\n(P/Km2)', ascending=False).head(10)
+print("\n===== DATASET DESCRIPTION =====")
+print(df.describe())
 
-plt.barh(top_density['Country'], top_density['Density\n(P/Km2)'])
-plt.xlabel("Population Density")
-plt.ylabel("Country")
-plt.title("Top 10 Most Densely Populated Countries")
-plt.show()
+# Check missing values
+print("\n===== MISSING VALUES =====")
+print(df.isnull().sum())
 
-fig = px.scatter(
-    df,
-    x='Birth Rate',
-    y='Co2-Emissions',
-    size='Land Area(Km2)',
-    color='Country',
-    title="Birth Rate vs CO₂ Emissions (Global View)",
-    hover_name='Country'
-)
+# Correlation matrix
+print("\n===== CORRELATION MATRIX =====")
+print(df.corr(numeric_only=True))
 
-fig.show()
-fig = px.choropleth(
-    df,
-    locations='Country',
-    locationmode='country names',
-    color='Unemployment rate',
-    title='Global Unemployment Rate',
-    color_continuous_scale='Plasma'
-)
+# Simple Visualization (example: first two numeric columns)
+numeric_cols = df.select_dtypes(include='number').columns
 
-fig.show()
-
-countries = ['India', 'United States', 'China']
-
-df[df['Country'].isin(countries)][[
-    'Country',
-    'Birth Rate',
-    'Unemployment rate',
-    'Co2-Emissions'
-]]
-print("Global Analysis Completed Successfully!")
-
-
-
+if len(numeric_cols) >= 2:
+    plt.figure()
+    plt.plot(df[numeric_cols[0]], df[numeric_cols[1]])
+    plt.xlabel(numeric_cols[0])
+    plt.ylabel(numeric_cols[1])
+    plt.title("Global World Data Trend")
+    plt.show()
+else:
+    print("\nNot enough numeric columns for plotting.")
