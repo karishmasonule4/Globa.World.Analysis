@@ -1,1 +1,1 @@
-# Globa.World.Analysis
+# Global.World.Analysis
